@@ -1,6 +1,3 @@
 .idea/
 __pycache__
 venv
-build
-dist
-esg_lib.egg-info
