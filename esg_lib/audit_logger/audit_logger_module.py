@@ -1,9 +1,7 @@
-import inject
-
 from datetime import datetime
-from flask_pymongo import PyMongo
 from flask import Blueprint, request, g
 
+from esg_lib.audit_logger.models.AuditLog import AuditLog
 from esg_lib.audit_logger.utils import get_json_body, get_only_changed_values_and_id, get_action, get_primary_key_value
 
 
@@ -99,10 +97,6 @@ class AuditBlueprint(Blueprint):
 
         return response
 
-    def get_audit_collection(self):
-        mongo = inject.instance(PyMongo)
-        return mongo.db[AUDIT_COLLECTION_NAME]
-
     def create_log(self, action: str, endpoint: str, new_value=None, old_value=None):
         user_info = g.auth_user if g.get("auth_user") else {"email": "dummy@email.com", "fullname": "Dummy Name"}
 
@@ -113,7 +107,7 @@ class AuditBlueprint(Blueprint):
             "user": user_info,
             "old_value": old_value,
             "new_value": new_value,
-            "timestamp": datetime.utcnow()
+            "created_on": datetime.utcnow()
         }
-        self.get_audit_collection()
-        self.audit_collection.insert_one(audit_log)
+        action = AuditLog(**audit_log)
+        action.save()
