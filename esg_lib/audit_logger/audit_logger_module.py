@@ -1,6 +1,9 @@
-from datetime import datetime
+import inject
 
+from datetime import datetime
+from flask_pymongo import PyMongo
 from flask import Blueprint, request, g
+
 from esg_lib.audit_logger.utils import get_json_body, get_only_changed_values_and_id, get_action, get_primary_key_value
 from esg_lib.audit_logger.mongo_db import MongoDB
 
@@ -57,9 +60,20 @@ class AuditBlueprint(Blueprint):
             if request.method == 'DELETE':
                 new_data = new_data or None
                 if old_data:
-                    old_data = {"_id": old_data.get("_id")}
-                    primary_value = get_primary_key_value(primary_key_splits, old_data)
-                    old_data["name"] = primary_value
+                    if isinstance(old_data, list):
+                        old_data = [
+                            {
+                                "_id": d.get("_id"),
+                                "name": get_primary_key_value(primary_key_splits, d)
+                            } for d in old_data
+                        ]
+                    else:
+                        _id = old_data.get("_id")
+                        primary_value = get_primary_key_value(primary_key_splits, old_data)
+                        old_data = {
+                            "_id": _id,
+                            "name": primary_value
+                        }
 
             elif request.method == 'GET':
                 new_data = old_data = None
@@ -86,16 +100,11 @@ class AuditBlueprint(Blueprint):
         return response
 
     def get_audit_collection(self):
-        if not self.audit_collection:
-            self.audit_collection = MongoDB.get_collection(AUDIT_COLLECTION_NAME)
+        mongo = inject.instance(PyMongo)
+        return mongo.db[AUDIT_COLLECTION_NAME]
 
     def create_log(self, action: str, endpoint: str, new_value=None, old_value=None):
-        # TODO Change this when azure ad integrated
-        # user_info = g.auth_user if g.get("auth_user") else {}
-        user_info = {
-            "email": "dummy@email.com",
-            "fullname": "Dummy Name"
-        }
+        user_info = g.auth_user if g.get("auth_user") else {"email": "dummy@email.com", "fullname": "Dummy Name"}
 
         audit_log = {
             "collection": g.get("table_name"),

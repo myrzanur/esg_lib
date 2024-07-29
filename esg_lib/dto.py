@@ -14,19 +14,3 @@ class NullableInteger(fields.Integer):
 class NullableFloat(fields.Float):
     __schema_type__ = ["number", "null"]
     __schema_example__ = "nullable float"
-
-
-class DynamicFields(fields.Raw):
-    def format(self, value):
-        if not isinstance(value, dict):
-            raise ValueError("Value must be a dictionary")
-
-        # List of date fields to format
-        date_fields = ['created_on', 'modified_on']
-
-        # Format each date field if it exists in the value
-        for field in date_fields:
-            if field in value:
-                value[field] = value[field].isoformat()
-
-        return value
