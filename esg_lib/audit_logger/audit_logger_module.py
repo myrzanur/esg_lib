@@ -5,7 +5,7 @@ from flask_pymongo import PyMongo
 from flask import Blueprint, request, g
 
 from esg_lib.audit_logger.utils import get_json_body, get_only_changed_values_and_id, get_action, get_primary_key_value
-from esg_lib.audit_logger.mongo_db import MongoDB
+
 
 SUCCESS_STATUS_CODES = [200, 201, 204]
 DEFAULT_LOG_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH"]
