@@ -36,7 +36,7 @@ class AuditDto:
             "user": fields.Nested(user_info),
             "old_value": fields.Raw(),
             "new_value": fields.Raw(),
-            "timestamp": fields.DateTime(),
+            "created_on": fields.DateTime(),
         },
     )
 
