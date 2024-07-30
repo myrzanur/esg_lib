@@ -11,4 +11,4 @@ class AuditLog(Document):
     user = None
     old_value = None
     new_value = None
-    timestamp = None
+    created_on = None
